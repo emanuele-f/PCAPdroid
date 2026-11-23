@@ -345,6 +345,9 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                 mDetails.put(product.getProductId(), product);
             }
 
+            if(mBillingClient == null)
+                return;
+
             mBillingClient.queryPurchasesAsync(
                     QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build(),
                     (billingResult1, purchases) -> {
@@ -373,7 +376,8 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                     .setProductList(productList)
                     .build();
 
-            mBillingClient.queryProductDetailsAsync(params, this);
+            if(mBillingClient != null)
+                mBillingClient.queryProductDetailsAsync(params, this);
         } else
             onPurchasesError(billingResult);
     }
@@ -443,6 +447,9 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
             mHandler.post(() ->Toast.makeText(mContext, "Purchase token not found", Toast.LENGTH_SHORT).show());
             return;
         }
+
+        if(mBillingClient == null)
+            return;
 
         mBillingClient.consumeAsync(ConsumeParams.newBuilder().setPurchaseToken(token).build(), (billingResult, s) ->
                 Log.d(TAG, "consumeAsync response: " + billingResult2Str(billingResult))
@@ -603,23 +610,31 @@ public class PlayBilling extends Billing implements BillingClientStateListener, 
                 Log.i(TAG, "requestUnlockToken: " + token);
 
                 // Success, consume the purchase
-                mBillingClient.consumeAsync(ConsumeParams.newBuilder().setPurchaseToken(purchaseToken).build(), (billingResult, s) -> {
-                        Log.d(TAG, "consumeAsync[unlockToken] response: " + billingResult2Str(billingResult));
+                // Run on the main thread, as disconnectBilling may have cleared the client during the request
+                mHandler.post(() -> {
+                    if (mBillingClient == null) {
+                        Log.w(TAG, "Billing disconnected, cannot consume the unlock token purchase");
+                        return;
+                    }
 
-                        if(billingResult.getResponseCode() == BillingResponseCode.OK) {
-                            mHandler.post(() -> {
-                                if (mListener != null)
-                                    // to purchase it again
-                                    mListener.onSKUStateUpdate(Billing.UNLOCK_TOKEN_SKU, PurchaseState.UNSPECIFIED_STATE);
+                    mBillingClient.consumeAsync(ConsumeParams.newBuilder().setPurchaseToken(purchaseToken).build(), (billingResult, s) -> {
+                            Log.d(TAG, "consumeAsync[unlockToken] response: " + billingResult2Str(billingResult));
 
-                                mPrefs.edit().putString(Prefs.PREF_UNLOCK_TOKEN, token).apply();
+                            if(billingResult.getResponseCode() == BillingResponseCode.OK) {
+                                mHandler.post(() -> {
+                                    if (mListener != null)
+                                        // to purchase it again
+                                        mListener.onSKUStateUpdate(Billing.UNLOCK_TOKEN_SKU, PurchaseState.UNSPECIFIED_STATE);
 
-                                if(mPendingQrRequest != null)
-                                    startQrActivation(mPendingQrRequest, token);
-                                else
-                                    showUnlockToken();
-                            });
-                        }
+                                    mPrefs.edit().putString(Prefs.PREF_UNLOCK_TOKEN, token).apply();
+
+                                    if(mPendingQrRequest != null)
+                                        startQrActivation(mPendingQrRequest, token);
+                                    else
+                                        showUnlockToken();
+                                });
+                            }
+                    });
                 });
             } finally {
                 con.disconnect();
