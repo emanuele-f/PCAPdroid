@@ -142,7 +142,7 @@ public class CaptureService extends VpnService implements Runnable {
     private PcapDumper mDumper;
     private ConnectionsRegister conn_reg;
     private HttpLog mHttpLog;
-    private Uri mPcapUri;
+    private volatile Uri mPcapUri;
     private String mPcapFname;
     private NotificationCompat.Builder mStatusBuilder;
     private NotificationCompat.Builder mMalwareBuilder;
@@ -404,32 +404,17 @@ public class CaptureService extends VpnService implements Runnable {
         mDumper = null;
         mDumpQueue = null;
         mPendingUpdates.clear();
+        mPcapUri = null;
         mPcapFname = null;
         HAS_ERROR = false;
 
-        // Possibly allocate the dumper
+        // The dumper is allocated later in initDumper(), as it may perform blocking calls
         mCollectorAddress = "";
-        if(mSettings.dump_mode == Prefs.DumpMode.HTTP_SERVER)
-            mDumper = new HTTPServer(this, mSettings.http_server_port, mSettings.pcapng_format);
-        else if(mSettings.dump_mode == Prefs.DumpMode.PCAP_FILE) {
+        if(mSettings.dump_mode == Prefs.DumpMode.PCAP_FILE)
             mPcapFname = !mSettings.pcap_name.isEmpty() ? mSettings.pcap_name : Utils.getUniquePcapFileName(this, mSettings.pcapng_format);
-
-            if(!mSettings.pcap_uri.isEmpty())
-                mPcapUri = Uri.parse(mSettings.pcap_uri);
-            else
-                mPcapUri = Utils.getDownloadsUri(this, mPcapFname);
-
-            if(mPcapUri == null)
-                return abortStart();
-
-            mDumper = new FileDumper(this, mPcapUri);
-        } else if((mSettings.dump_mode == Prefs.DumpMode.UDP_EXPORTER) ||
-                (mSettings.dump_mode == Prefs.DumpMode.TCP_EXPORTER)) {
-            // For UDP/TCP exporters, the dumper is allocated later in run() (after resolveHosts)
-            // so that domain names in mSettings.collector_address can be resolved on a background
-            // thread using the underlying (non-VPN) network.
+        else if((mSettings.dump_mode == Prefs.DumpMode.UDP_EXPORTER) ||
+                (mSettings.dump_mode == Prefs.DumpMode.TCP_EXPORTER))
             mCollectorAddress = mSettings.collector_address;
-        }
 
         mSocks5Address = "";
         mSocks5Enabled = mSettings.socks5_enabled || mSettings.tls_decryption;
@@ -1247,15 +1232,21 @@ public class CaptureService extends VpnService implements Runnable {
         return true;
     }
 
-    // Inside the mCaptureThread
-    @Override
-    public void run() {
-        boolean hostResolved = resolveHosts();
-        mUnderlyingNetwork = null;
+    // Inside the mCaptureThread, after resolveHosts(), so mCollectorAddress is a numeric IP
+    private boolean initDumper() {
+        if(mSettings.dump_mode == Prefs.DumpMode.HTTP_SERVER)
+            mDumper = new HTTPServer(this, mSettings.http_server_port, mSettings.pcapng_format);
+        else if(mSettings.dump_mode == Prefs.DumpMode.PCAP_FILE) {
+            if(!mSettings.pcap_uri.isEmpty())
+                mPcapUri = Uri.parse(mSettings.pcap_uri);
+            else
+                mPcapUri = Utils.getDownloadsUri(this, mPcapFname);
 
-        // Allocate the exporter dumper now that the collector host has been resolved
-        // in resolveHosts(). mCollectorAddress is guaranteed to be a numeric IP here
-        if(hostResolved && !mCollectorAddress.isEmpty()) {
+            if(mPcapUri == null)
+                return false;
+
+            mDumper = new FileDumper(this, mPcapUri);
+        } else if(!mCollectorAddress.isEmpty()) {
             try {
                 InetAddress addr = InetAddress.getByName(mCollectorAddress);
                 InetSocketAddress sockAddr = new InetSocketAddress(addr, mSettings.collector_port);
@@ -1267,11 +1258,20 @@ public class CaptureService extends VpnService implements Runnable {
             } catch (UnknownHostException e) {
                 reportError(e.getLocalizedMessage());
                 e.printStackTrace();
-                hostResolved = false;
+                return false;
             }
         }
 
-        if(hostResolved && (mDumper != null)) {
+        return true;
+    }
+
+    // Inside the mCaptureThread
+    @Override
+    public void run() {
+        boolean initOk = resolveHosts() && initDumper();
+        mUnderlyingNetwork = null;
+
+        if(initOk && (mDumper != null)) {
             // Max memory usage = (JAVA_PCAP_BUFFER_SIZE * 64) = 32 MB
             mDumpQueue = new LinkedBlockingDeque<>(64);
 
@@ -1279,7 +1279,7 @@ public class CaptureService extends VpnService implements Runnable {
             mDumperThread.start();
         }
 
-        if(!hostResolved) {
+        if(!initOk) {
             // fall through to cleanup
         } else if(mSettings.root_capture || mSettings.readFromPcap()) {
             // Check for INTERACT_ACROSS_USERS, required to query apps of other users/work profiles

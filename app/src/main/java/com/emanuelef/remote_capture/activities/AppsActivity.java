@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-21 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.activities;
@@ -33,8 +33,9 @@ public class AppsActivity extends BaseActivity {
         setTitle(R.string.apps);
         setContentView(R.layout.fragment_activity);
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment, new AppsFragment())
-                .commit();
+        if (savedInstanceState == null)
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment, new AppsFragment())
+                    .commit();
     }
 }

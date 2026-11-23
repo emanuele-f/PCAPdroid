@@ -73,6 +73,7 @@ import java.util.Set;
 
 public class StatusFragment extends Fragment implements AppStateListener, MenuProvider {
     private static final String TAG = "StatusFragment";
+    private static final int MAX_APP_FILTER_TEXT_LEN = 48;
     private Menu mMenu;
     private MenuItem mStartBtn;
     private MenuItem mStopBtn;
@@ -296,9 +297,13 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
                         tmp = app.getName();
 
                     parts.add(tmp);
+
+                    // the text is truncated anyway, no need to resolve the other apps
+                    if (String.join(", ", parts).length() > MAX_APP_FILTER_TEXT_LEN)
+                        break;
                 }
 
-                text = Utils.shorten(String.join(", ", parts), 48);
+                text = Utils.shorten(String.join(", ", parts), MAX_APP_FILTER_TEXT_LEN);
             }
         }
 
@@ -340,8 +345,11 @@ public class StatusFragment extends Fragment implements AppStateListener, MenuPr
         // Check if a filter is set
         Drawable drawable = null;
         if((mAppFilter != null) && (!mAppFilter.isEmpty())) {
-            Pair<String, Drawable> pair = getAppFilterTextAndIcon(context);
-            drawable = pair.second;
+            // only the icon is shown, avoid resolving all the apps
+            if (mAppFilter.size() > 1)
+                drawable = ContextCompat.getDrawable(context, R.drawable.ic_image);
+            else
+                drawable = getAppFilterTextAndIcon(context).second;
         }
 
         if (drawable != null) {

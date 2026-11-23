@@ -16,8 +16,8 @@ android {
         minSdkVersion 23
         compileSdk 37
         targetSdk 37
-        versionCode 96
-        versionName "2.0.3"
+        versionCode 98
+        versionName "2.0.5"
 
         // only include full translations
         // NOTE: keep in sync with locales_config.xml
@@ -72,6 +72,13 @@ android {
             // NOTE: needed to unpack libpcapd.so when installed as app bundle
             useLegacyPackaging = true
         }
+    }
+
+    // Disable the DEPENDENCY_INFO_BLOCK, which contains an encrypted binary blob
+    // with the app dependencies, embedded by the AGP
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 
     externalNativeBuild {
@@ -134,9 +141,39 @@ tasks.register('buildHostZstdJni', BuildHostZstdJniTask) {
     outputDir = file("${buildDir}/hostJni")
 }
 
+// Prevent release builds with submodules not matching the commits pinned in the repo
+abstract class CheckSubmodulesTask extends DefaultTask {
+    @Inject abstract ExecOperations getExecOps()
+
+    @Internal File repoDir
+
+    @TaskAction
+    void check() {
+        def out = new ByteArrayOutputStream()
+        execOps.exec {
+            commandLine 'git', 'submodule', 'status'
+            workingDir repoDir
+            standardOutput = out
+        }
+
+        // a non-space prefix means: '+' different commit checked out, '-' not initialized, 'U' merge conflicts
+        def mismatching = out.toString().readLines().findAll { !it.startsWith(' ') }
+        if (!mismatching.isEmpty()) {
+            throw new GradleException("Submodules do not match the pinned commits:\n  " +
+                    mismatching.join("\n  ") + "\nRun: git submodule update --init")
+        }
+    }
+}
+
+tasks.register('checkSubmodules', CheckSubmodulesTask) {
+    repoDir = rootDir
+}
+
 tasks.configureEach { task ->
     if (task.name.startsWith("test") && task.name.endsWith("UnitTest")) {
         task.dependsOn buildHostZstdJni
+    } else if (task.name ==~ /pre\w+ReleaseBuild/) {
+        task.dependsOn checkSubmodules
     }
 }
 

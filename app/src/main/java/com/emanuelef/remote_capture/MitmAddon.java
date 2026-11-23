@@ -249,8 +249,16 @@ public class MitmAddon {
         Intent intent = new Intent();
         intent.setComponent(new ComponentName(MitmAPI.PACKAGE_NAME, MitmAPI.MITM_SERVICE));
 
-        if(!mContext.bindService(intent, mConnection, Context.BIND_AUTO_CREATE |
-                Context.BIND_ALLOW_ACTIVITY_STARTS | extra_flags)) {
+        boolean bound;
+        try {
+            bound = mContext.bindService(intent, mConnection, Context.BIND_AUTO_CREATE |
+                    Context.BIND_ALLOW_ACTIVITY_STARTS | extra_flags);
+        } catch (SecurityException e) {
+            Log.e(TAG, "bindService failed: " + e.getMessage());
+            bound = false;
+        }
+
+        if(!bound) {
             try {
                 mContext.unbindService(mConnection);
             } catch (IllegalArgumentException ignored) {
