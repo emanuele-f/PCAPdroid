@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-22 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.pcap_dump;
@@ -100,7 +100,7 @@ public class HTTPServer implements PcapDumper, Runnable {
      * (see isReadyForData).
      */
     private static class ClientHandler implements Runnable {
-        static final int INPUT_BUFSIZE = 1024;
+        static final int INPUT_BUFSIZE = 8192;
         Socket mSocket;
         final InputStream mInputStream;
         final OutputStream mOutputStream;
@@ -154,7 +154,18 @@ public class HTTPServer implements PcapDumper, Runnable {
 
             try {
                 while(req_size <= 0) {
-                    sofar += mInputStream.read(buf, sofar, buf.length - sofar);
+                    if(sofar >= buf.length) {
+                        close("Request headers too large");
+                        return;
+                    }
+
+                    int num_read = mInputStream.read(buf, sofar, buf.length - sofar);
+                    if(num_read < 0) {
+                        close("Connection closed");
+                        return;
+                    }
+
+                    sofar += num_read;
                     req_size = Utils.getEndOfHTTPHeaders(buf);
                 }
 
