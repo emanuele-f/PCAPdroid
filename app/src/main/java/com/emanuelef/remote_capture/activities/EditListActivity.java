@@ -72,9 +72,10 @@ public class EditListActivity extends BaseActivity {
 
         setContentView(R.layout.fragment_activity);
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment, mListInfo.newFragment())
-                .commit();
+        if(savedInstanceState == null)
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment, mListInfo.newFragment())
+                    .commit();
     }
 
     private void setAppAllowlistTitle(String appPackage) {

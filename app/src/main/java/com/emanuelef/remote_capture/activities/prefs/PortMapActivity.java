@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with PCAPdroid.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright 2020-22 - Emanuele Faranda
+ * Copyright 2020-26 - Emanuele Faranda
  */
 
 package com.emanuelef.remote_capture.activities.prefs;
@@ -32,8 +32,9 @@ public class PortMapActivity extends BaseActivity {
         setTitle(R.string.port_mapping);
         setContentView(R.layout.fragment_activity);
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment, new PortMapFragment())
-                .commit();
+        if (savedInstanceState == null)
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment, new PortMapFragment())
+                    .commit();
     }
 }
