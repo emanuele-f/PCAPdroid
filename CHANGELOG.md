@@ -2,6 +2,11 @@
 
 Releases available at https://github.com/emanuele-f/PCAPdroid/releases
 
+## [2.0.5] - 2026-11-23
+- Fix crash on device rotation with a preference dialog open
+- Fix build not reproducible with ushark built from the source
+- Fix minor crashes and ANRs
+
 ## [2.0.4] - 2026-11-20
 - Add the native modules fixes claimed in 2.0.3 but missing from the Github apk
 - Changes to make the build reproducible
