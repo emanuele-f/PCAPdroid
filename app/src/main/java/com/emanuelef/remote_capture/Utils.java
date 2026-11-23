@@ -999,7 +999,7 @@ public class Utils {
             values.put(MediaStore.MediaColumns.RELATIVE_PATH, relPath);
         } else {
             if(context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                Utils.showToastLong(context, R.string.external_storage_perm_required);
+                Utils.runOnUi(() -> Utils.showToastLong(context, R.string.external_storage_perm_required), new Handler(Looper.getMainLooper()));
                 return(null);
             }
 
@@ -1031,7 +1031,7 @@ public class Utils {
         } catch (Exception e) {
             // On some devices, it may trigger "IllegalArgumentException: Volume external_primary not found"
             Log.e(TAG, "getDownloadsUri failed:" + e.getMessage());
-            Utils.showToastLong(context, R.string.write_ext_storage_failed);
+            Utils.runOnUi(() -> Utils.showToastLong(context, R.string.write_ext_storage_failed), new Handler(Looper.getMainLooper()));
             return(null);
         }
     }
